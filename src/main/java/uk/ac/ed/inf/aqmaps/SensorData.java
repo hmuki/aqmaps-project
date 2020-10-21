@@ -7,16 +7,18 @@ public class SensorData {
 	public String location;
 	public double battery;
 	public String reading;
+	public Location locationCoordinates;
 	
-	public SensorData(String location, double battery, String reading) {
-		this.location = location;
-		this.battery = battery;
-		this.reading = reading;
-	}
-	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		System.out.println("hello world!");
+	public static class Location {
+		
+		public Coordinates coordinates;
+		
+		public static class Coordinates {
+			
+			public double lng;
+			public double lat;
+			
+		}
 	}
 
 }
