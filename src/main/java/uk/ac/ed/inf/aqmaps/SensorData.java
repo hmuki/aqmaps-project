@@ -20,5 +20,13 @@ public class SensorData {
 			
 		}
 	}
+	
+	public String getLocation() { return location; }
+
+	public double getBattery() { return battery; }
+
+	public String getReading() { return reading; }
+
+	public Location getLocationCoordinates() { return locationCoordinates; }
 
 }

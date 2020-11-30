@@ -1,12 +1,12 @@
 package uk.ac.ed.inf.aqmaps;
 
-public class Point2D  {
-	
-	public int index;
-	public double x;
-	public double y;
-	public double r;
-	public double theta;
+public class Point2D implements Point {
+
+	private int index = -1;
+	private double x;
+	private double y;
+	private double r = 0;
+	private double theta = 0;
 	
 	public Point2D(SensorData.Location.Coordinates point, SensorData.Location.Coordinates centre, int index) {
 		this.x = point.lng;
@@ -15,22 +15,26 @@ public class Point2D  {
 		this.setAngleDistancePair(centre);
 	}
 	
-	public Point2D(SensorData.Location.Coordinates point) {
-		this.x = point.lng;
-		this.y = point.lat;
-		this.index = -1;
-		this.r = 0;
-		this.theta = 0;
+	public Point2D(double x, double y) {
+		this.x = x;
+		this.y = y;		
 	}
 	
 	// copy constructor
 	public Point2D(Point2D point) {
 		this.x = point.x;
 		this.y = point.y;
-		this.index = -1;
-		this.r = 0;
-		this.theta = 0;
 	}
+	
+	public int getIndex() {	return index; }
+
+	public double getX() {	return x; }
+
+	public double getY() { return y; }
+
+	public double getR() { return r; }
+
+	public double getTheta() { return theta; }
 	
 	public void setAngleDistancePair(SensorData.Location.Coordinates centre) {
 		
@@ -44,20 +48,28 @@ public class Point2D  {
 		this.theta = angle;
 	}
 	
-	public Double getDistanceFrom(Point2D point) {
+	public double getAngleFrom(Point point) {
 		
-		var dy = this.y - point.y;
-		var dx = this.x - point.x;
-		
-		return Math.sqrt(dx*dx + dy*dy);
-	}
-	
-	public Double getAngleFrom(Point2D point) {
-		
-		var dy = this.y - point.y;
-		var dx = this.x - point.x;
+		var dy = this.y - point.getY();
+		var dx = this.x - point.getX();
 		
 		return Math.atan2(dy, dx);
 	}
 	
+	public double getDistanceFrom(Point point) {
+		
+		var dy = this.y - point.getY();
+		var dx = this.x - point.getX();
+		
+		return Math.sqrt(dx*dx + dy*dy);
+	}
+	
+	public boolean isCloseTo(Point point, double distance) {
+		
+		var dx = this.getX() - point.getX();
+		var dy = this.getY() - point.getY();
+
+		return Math.sqrt(dx*dx + dy*dy) < distance;
+	}
+
 }
