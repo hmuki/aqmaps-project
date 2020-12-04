@@ -2,15 +2,15 @@ package uk.ac.ed.inf.aqmaps;
 
 public class Point2D implements Point {
 
-	private int index = -1;
+	private int index = -1; // the ordinal number of the sensor at this point, beginning from 0 (default is -1)
 	private double x;
 	private double y;
 	private double r = 0;
 	private double theta = 0;
 	
 	public Point2D(SensorData.Location.Coordinates point, SensorData.Location.Coordinates centre, int index) {
-		this.x = point.lng;
-		this.y = point.lat;
+		this.x = point.getLng();
+		this.y = point.getLat();
 		this.index = index;
 		this.setAngleDistancePair(centre);
 	}
@@ -36,10 +36,11 @@ public class Point2D implements Point {
 
 	public double getTheta() { return theta; }
 	
+	// sets the r and theta attributes
 	public void setAngleDistancePair(SensorData.Location.Coordinates centre) {
 		
-		var dy = this.y - centre.lat;
-		var dx = this.x - centre.lng;
+		var dy = this.y - centre.getLat();
+		var dx = this.x - centre.getLng();
 		
 		var distance = Math.sqrt(dx*dx + dy*dy);
 		var angle = Math.atan2(dy, dx);
@@ -48,6 +49,7 @@ public class Point2D implements Point {
 		this.theta = angle;
 	}
 	
+	// Computes the angle of elevation of this point from the specified point
 	public double getAngleFrom(Point point) {
 		
 		var dy = this.y - point.getY();
@@ -56,6 +58,7 @@ public class Point2D implements Point {
 		return Math.atan2(dy, dx);
 	}
 	
+	// Compute Euclidean distance between this point and the specified point
 	public double getDistanceFrom(Point point) {
 		
 		var dy = this.y - point.getY();
@@ -64,6 +67,7 @@ public class Point2D implements Point {
 		return Math.sqrt(dx*dx + dy*dy);
 	}
 	
+	// Checks if this point is within the specified distance of the given point
 	public boolean isCloseTo(Point point, double distance) {
 		
 		var dx = this.getX() - point.getX();

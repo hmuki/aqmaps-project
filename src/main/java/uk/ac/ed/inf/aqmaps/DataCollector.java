@@ -15,10 +15,10 @@ import uk.ac.ed.inf.aqmaps.SensorData.Location;
 
 public class DataCollector {
 
-	protected final String day;
-	protected final String month;
-	protected final String year;
-	protected final int port;
+	protected final String day; // day on which readings were taken
+	protected final String month; // month in which readings were taken
+	protected final String year; // year in which readings were taken
+	protected final int port; // port with which we communicate to the server
 	protected final ArrayList<SensorData> sensorReadings;
 	
 	public DataCollector(String day, String month, String year, int port) {
@@ -30,25 +30,25 @@ public class DataCollector {
 	}
 	
 	public String getDay() { return day; }
-
+	
 	public String getMonth() { return month; }
-
+	
 	public String getYear() { return year; }
-
+	
 	public ArrayList<SensorData> getSensorReadings() { return sensorReadings; }
-
+	
+	// get pre-processed sensor data
 	public ArrayList<SensorData> getData() {
 				
 		System.out.println(day + " " + month + " " + year);
-
+		// Make a request to the web server for sensor data via Http
 		var client = HttpClient.newHttpClient();
 		var filePath = "maps/" + year + "/" + month + "/" + day + "/air-quality-data.json";
 		var url = "http://localhost:80/" + filePath;
 		var request = HttpRequest.newBuilder().uri(URI.create(url)).build();
-
+		// deserialize the json response and catch any exceptions that may occur
 		try {
 			var response = client.send(request, BodyHandlers.ofString());
-			System.out.println(response.body());
 			var data = this.attachCoordinates(Utilities.deserialize(response.body()));
 			return data;
 		} catch (Exception e) {
@@ -58,6 +58,7 @@ public class DataCollector {
 
 	}
 	
+	// attach the latitude and longitude (sensor location) to the sensor readings
 	public ArrayList<SensorData> attachCoordinates(ArrayList<SensorData> data) {
 
 		if (data == null) {
@@ -65,20 +66,19 @@ public class DataCollector {
 		}
 		
 		for (var datum : data) {
-
-			var location = datum.location;
+			// Issue request to the web server for location data via Http
+			var location = datum.getLocation();
 			String[] words = location.split("\\.");
 			var filePath = "words/" + words[0] + "/" + words[1] + "/" + words[2] + "/details.json";
 			var url = "http://localhost:" + port + "/" + filePath;
 
 			var client = HttpClient.newHttpClient();
 			var request = HttpRequest.newBuilder().uri(URI.create(url)).build();
-
+			// deserialize response, use Location class to store data and append to already existing sensor data
 			try {
 				var response = client.send(request, BodyHandlers.ofString());
-				// attach location coordinates
 				var locationCoordinates = new Gson().fromJson(response.body(), Location.class);
-				datum.locationCoordinates = locationCoordinates;
+				datum.setLocationCoordinates(locationCoordinates);
 			} catch (Exception e) {
 				System.out.println(e);
 				return null;
@@ -88,8 +88,10 @@ public class DataCollector {
 		return data;
 	}
 	
+	// return the No Fly Zones as a list of lists of Point2D points
 	public ArrayList<ArrayList<Point2D>> getNoFlyZones() {
 		
+		// Request for the coordinates of No Fly Zones from the web server using Http 
 		var url = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
 		var client = HttpClient.newHttpClient();
 		var request = HttpRequest.newBuilder().uri(URI.create(url)).build();
@@ -101,12 +103,13 @@ public class DataCollector {
 			featureList.addAll(featureCollection.features());
 			var polygonList = new ArrayList<Polygon>();
 			
+			// Store No Fly Zones as a list of lists of Point2D points
 			var polygons = new ArrayList<ArrayList<Point2D>>();
 			
 			for (var feature : featureList) {
 				polygonList.add((Polygon)feature.geometry());
 			}
-			
+			// iterate over the polygons, extract coordinates and insert in a list of lists
 			for (int i = 0; i < polygonList.size(); i++) {
 				
 				var pointArray = polygonList.get(i).coordinates().get(0);
